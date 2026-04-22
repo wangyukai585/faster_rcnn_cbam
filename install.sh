@@ -11,7 +11,7 @@ echo "====== [1/5] 配置 pip 国内镜像 ======"
 pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 
 echo "====== [2/5] 安装 mmengine ======"
-pip install mmengine>=0.8.0
+pip install 'mmengine>=0.8.0'
 
 echo "====== [3/5] 安装 mmcv（预编译 wheel，对应 PyTorch 2.0.0 + CUDA 11.8）======"
 # 官方预编译 wheel 地址（国内可访问）
@@ -19,7 +19,7 @@ pip install mmcv==2.0.1 \
     -f https://download.openmmlab.com/mmcv/dist/cu118/torch2.0/index.html
 
 echo "====== [4/5] 安装 mmdet 及其他依赖 ======"
-pip install mmdet>=3.2.0
+pip install 'mmdet>=3.2.0'
 pip install numpy pillow scipy matplotlib seaborn pandas pycocotools tqdm lxml
 
 echo "====== [5/5] 下载 ResNet50 预训练权重 ======"
