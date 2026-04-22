@@ -42,8 +42,6 @@ _EXP_STYLES: Dict[str, Tuple[str, str]] = {
     'ablation_2_channel_only': ('CA Only',             '#FF9800'),
     'ablation_3_spatial_only': ('SA Only',             '#9C27B0'),
     'ablation_4_cbam_r16_k7':  ('Full CBAM (r=16,k=7)', '#F44336'),
-    'ablation_5_cbam_r8_k7':   ('CBAM (r=8, k=7)',    '#795548'),
-    'ablation_6_cbam_r16_k3':  ('CBAM (r=16,k=3)',    '#607D8B'),
     'hyper_lr0005_bs4':        ('lr=0.005, bs=4',     '#00BCD4'),
     'hyper_lr001_bs4':         ('lr=0.01,  bs=4 (默认)', '#F44336'),
     'hyper_lr002_bs4':         ('lr=0.02,  bs=4',     '#FF5722'),
@@ -222,8 +220,6 @@ _ABLATION_KEYS = [
     'ablation_2_channel_only',
     'ablation_3_spatial_only',
     'ablation_4_cbam_r16_k7',
-    'ablation_5_cbam_r8_k7',
-    'ablation_6_cbam_r16_k3',
 ]
 
 

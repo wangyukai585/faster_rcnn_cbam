@@ -36,7 +36,7 @@ except ImportError:
 # 实验定义
 # ============================================================
 
-# 消融实验：6组，按"从无到有"的逻辑排列
+# 消融实验：4组，按"从无到有"的逻辑排列
 _ABLATION_EXPS = [
     {
         'dir':         'ablation_1_baseline',
@@ -61,18 +61,6 @@ _ABLATION_EXPS = [
         'name':        '完整CBAM（r=16, k=7）',
         'config':      'cbam_faster_rcnn.py',
         'cbam_params': 'r=16, k=7',
-    },
-    {
-        'dir':         'ablation_5_cbam_r8_k7',
-        'name':        'CBAM（r=8, k=7）',
-        'config':      'ablation_cbam_r8.py',
-        'cbam_params': 'r=8, k=7',
-    },
-    {
-        'dir':         'ablation_6_cbam_r16_k3',
-        'name':        'CBAM（r=16, k=3）',
-        'config':      'ablation_cbam_k3.py',
-        'cbam_params': 'r=16, k=3',
     },
 ]
 
@@ -165,8 +153,6 @@ def _estimate_extra_params(cbam_params: str) -> str:
 
     configs_map = {
         'r=16, k=7': (16, 7),
-        'r=8, k=7':  (8, 7),
-        'r=16, k=3': (16, 3),
         'CA only':   (16, 0),  # 无空间注意力
         'SA only':   (0, 7),   # 无通道注意力
     }

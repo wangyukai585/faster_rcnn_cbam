@@ -3,17 +3,16 @@
 # 一键运行所有超参数实验（5组）
 #
 # 实验设计：在完整 CBAM 模型基础上，分别验证学习率和批量大小的影响。
-# 所有实验使用相同的 backbone（ResNetCBAM）和网络结构，仅改变训练超参数。
 #
 #   实验矩阵：
 #   ┌─────────┬────────────┬──────────────┐
 #   │ 实验     │ lr         │ batch_size   │
 #   ├─────────┼────────────┼──────────────┤
-#   │ 1       │ 0.005      │ 4（对照）    │
+#   │ 1       │ 0.005      │ 4            │
 #   │ 2（默认）│ 0.01       │ 4            │
-#   │ 3       │ 0.02       │ 4（对照）    │
-#   │ 4       │ 0.005(lr缩放)│ 2           │
-#   │ 5       │ 0.02(lr缩放)│ 8            │
+#   │ 3       │ 0.02       │ 4            │
+#   │ 4       │ 0.005(缩放)│ 2            │
+#   │ 5       │ 0.02(缩放) │ 8            │
 #   └─────────┴────────────┴──────────────┘
 #
 # 用法（在项目根目录 faster_rcnn_cbam/ 下运行）：
@@ -22,14 +21,19 @@
 
 set -e
 
+SEED=42
 PYTHON="python"
 TRAIN="pytorch_mmdet/tools/train.py"
 EVAL="pytorch_mmdet/tools/evaluate.py"
 RESULTS_DIR="experiments/results"
-SEED=42
+
+# mmengine 保存最优权重文件名格式：best_pascal_voc_mAP_epoch_N.pth
+find_best_ckpt() {
+    ls "$1"/best_pascal_voc_mAP_epoch_*.pth 2>/dev/null | sort -V | tail -1
+}
 
 echo "========================================================"
-echo "  超参数实验开始"
+echo "  超参数实验开始（共 5 组）"
 echo "  结果目录: ${RESULTS_DIR}/"
 echo "========================================================"
 
@@ -43,14 +47,15 @@ ${PYTHON} ${TRAIN} \
     pytorch_mmdet/configs/hyper_lr0005.py \
     --work-dir "${RESULTS_DIR}/${EXP_NAME}" \
     --seed ${SEED}
+
+CKPT=$(find_best_ckpt "${RESULTS_DIR}/${EXP_NAME}")
 ${PYTHON} ${EVAL} \
     pytorch_mmdet/configs/hyper_lr0005.py \
-    "${RESULTS_DIR}/${EXP_NAME}/best_pascal_voc_mAP.pth" \
+    "${CKPT}" \
     --out-dir "${RESULTS_DIR}/${EXP_NAME}"
 
 # ============================================================
-# 实验 2/5：lr=0.01，bs=4（默认，直接复用 cbam 结果）
-# 若已有结果则跳过训练，直接评估
+# 实验 2/5：lr=0.01，bs=4（默认，若已有结果则跳过训练）
 # ============================================================
 EXP_NAME="hyper_lr001_bs4"
 echo ""
@@ -60,9 +65,10 @@ if [ ! -f "${RESULTS_DIR}/${EXP_NAME}/eval_results.json" ]; then
         pytorch_mmdet/configs/cbam_faster_rcnn.py \
         --work-dir "${RESULTS_DIR}/${EXP_NAME}" \
         --seed ${SEED}
+    CKPT=$(find_best_ckpt "${RESULTS_DIR}/${EXP_NAME}")
     ${PYTHON} ${EVAL} \
         pytorch_mmdet/configs/cbam_faster_rcnn.py \
-        "${RESULTS_DIR}/${EXP_NAME}/best_pascal_voc_mAP.pth" \
+        "${CKPT}" \
         --out-dir "${RESULTS_DIR}/${EXP_NAME}"
 else
     echo "  已存在结果，跳过训练。"
@@ -78,9 +84,11 @@ ${PYTHON} ${TRAIN} \
     pytorch_mmdet/configs/hyper_lr002.py \
     --work-dir "${RESULTS_DIR}/${EXP_NAME}" \
     --seed ${SEED}
+
+CKPT=$(find_best_ckpt "${RESULTS_DIR}/${EXP_NAME}")
 ${PYTHON} ${EVAL} \
     pytorch_mmdet/configs/hyper_lr002.py \
-    "${RESULTS_DIR}/${EXP_NAME}/best_pascal_voc_mAP.pth" \
+    "${CKPT}" \
     --out-dir "${RESULTS_DIR}/${EXP_NAME}"
 
 # ============================================================
@@ -93,9 +101,11 @@ ${PYTHON} ${TRAIN} \
     pytorch_mmdet/configs/hyper_bs2.py \
     --work-dir "${RESULTS_DIR}/${EXP_NAME}" \
     --seed ${SEED}
+
+CKPT=$(find_best_ckpt "${RESULTS_DIR}/${EXP_NAME}")
 ${PYTHON} ${EVAL} \
     pytorch_mmdet/configs/hyper_bs2.py \
-    "${RESULTS_DIR}/${EXP_NAME}/best_pascal_voc_mAP.pth" \
+    "${CKPT}" \
     --out-dir "${RESULTS_DIR}/${EXP_NAME}"
 
 # ============================================================
@@ -108,9 +118,11 @@ ${PYTHON} ${TRAIN} \
     pytorch_mmdet/configs/hyper_bs8.py \
     --work-dir "${RESULTS_DIR}/${EXP_NAME}" \
     --seed ${SEED}
+
+CKPT=$(find_best_ckpt "${RESULTS_DIR}/${EXP_NAME}")
 ${PYTHON} ${EVAL} \
     pytorch_mmdet/configs/hyper_bs8.py \
-    "${RESULTS_DIR}/${EXP_NAME}/best_pascal_voc_mAP.pth" \
+    "${CKPT}" \
     --out-dir "${RESULTS_DIR}/${EXP_NAME}"
 
 # ============================================================
