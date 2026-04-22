@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# 虚拟环境
+.env
+.venv
+env/
+venv/
+
+# 数据集（体积太大，不上传）
+data/
+
+# 实验结果、模型权重
+experiments/results/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# 报告图片（可选，如需上传注释掉这行）
+# report/figures/
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# 日志
+*.log
