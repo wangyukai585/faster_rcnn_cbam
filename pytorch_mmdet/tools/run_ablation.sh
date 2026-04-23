@@ -118,7 +118,7 @@ echo ""
 echo "========================================================"
 echo "  所有消融实验完成！正在汇总结果..."
 echo "========================================================"
-${PYTHON} analyze_results.py --mode ablation
+${PYTHON} analyze_results.py
 
 echo ""
 echo "  结果表格和图表已保存到 report/figures/"
