@@ -258,7 +258,8 @@ def plot_ablation_bar(results_dir: str, out_dir: str) -> None:
     ax.set_xticklabels(labels, rotation=20, ha='right')
     ax.set_ylabel('mAP@0.5 (%)')
     ax.set_title('消融实验：各注意力组件对 mAP 的贡献')
-    ax.set_ylim(0, max(maps) * 1.12 if maps else 100)
+    y_max = max(maps) * 1.12 if maps else 100
+    ax.set_ylim(0, y_max if y_max > 0 else 100)
     ax.grid(True, axis='y', linestyle='--', alpha=0.5)
 
     os.makedirs(out_dir, exist_ok=True)
@@ -300,7 +301,8 @@ def plot_hyper_comparison(results_dir: str, out_dir: str) -> None:
     axes[0].set_xticklabels(lr_vals)
     axes[0].set_ylabel('mAP@0.5 (%)')
     axes[0].set_title('学习率对比（batch_size=4）')
-    axes[0].set_ylim(0, max(lr_maps) * 1.12 if lr_maps else 100)
+    lr_y_max = max(lr_maps) * 1.12 if lr_maps else 100
+    axes[0].set_ylim(0, lr_y_max if lr_y_max > 0 else 100)
     axes[0].grid(True, axis='y', linestyle='--', alpha=0.5)
 
     # ---- 子图 2：Batch Size 对比----
@@ -327,7 +329,8 @@ def plot_hyper_comparison(results_dir: str, out_dir: str) -> None:
     axes[1].set_xticklabels(bs_vals)
     axes[1].set_ylabel('mAP@0.5 (%)')
     axes[1].set_title('Batch Size 对比（线性缩放 lr）')
-    axes[1].set_ylim(0, max(bs_maps) * 1.12 if bs_maps else 100)
+    bs_y_max = max(bs_maps) * 1.12 if bs_maps else 100
+    axes[1].set_ylim(0, bs_y_max if bs_y_max > 0 else 100)
     axes[1].grid(True, axis='y', linestyle='--', alpha=0.5)
 
     fig.suptitle('超参数实验对比', fontsize=14, fontweight='bold', y=1.02)
