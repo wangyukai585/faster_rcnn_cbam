@@ -177,14 +177,17 @@ $$\mathbf{M}_s(\mathbf{F}) = \sigma\left(f^{7\times7}\left(\left[\text{AvgPool}(
 
 | 组件 | 版本 / 规格 |
 |------|-------------|
-| GPU | NVIDIA GeForce RTX 4090 D (24GB) |
+| 实验平台 | **AutoDL 云 GPU 平台**（[autodl.com](https://www.autodl.com)） |
+| GPU | NVIDIA GeForce RTX 4090 D（24 GB 显存） |
 | CUDA | 11.8 |
 | Python | 3.10 |
 | PyTorch | 2.0.0+cu118 |
 | mmengine | 0.10.7 |
 | mmcv | **2.0.1**（预编译 wheel，严格对应 PyTorch 2.0 + CUDA 11.8） |
 | mmdet | 3.3.0 |
-| OS | Ubuntu 20.04（AutoDL 平台） |
+| OS | Ubuntu 20.04（AutoDL 镜像） |
+| 总训练时长 | ≈ **21 小时 24 分钟**（9 组实验，含消融 + 超参） |
+| 总计费用 | **≈ 57 元**（RTX 4090 D 按小时计费） |
 
 > **关键注意**：mmcv 版本须与 PyTorch/CUDA 严格对应，不可直接 `pip install mmcv`，需通过官方预编译 wheel 安装。
 
@@ -401,6 +404,9 @@ $$\text{CA 参数量} = \sum_{l} 2 \times \frac{C_l}{r} \times C_l = 2 \times \l
 | 推理速度 | Baseline：78.5 FPS；Full CBAM：56.2 FPS |
 | 框架实现 | PyTorch（主） + Jittor（等价实现，加分项）✓ |
 | 代码可运行 | `bash install.sh` + `bash pytorch_mmdet/tools/run_ablation.sh` ✓ |
+| 实验平台 | AutoDL 云平台，NVIDIA RTX 4090 D（24 GB） |
+| 总训练时长 | ≈ **21 h 24 min**（9 组实验） |
+| 总计费用 | **≈ 57 元** |
 
 ### 9.2 创新点回顾
 
