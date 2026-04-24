@@ -23,8 +23,6 @@ experiments/results/
 # Jupyter
 .ipynb_checkpoints/
 
-# 报告图片和汇总数据（生成产物，不上传）
-report/figures/
 
 # macOS
 .DS_Store

@@ -1,0 +1,87 @@
+{
+  "ablation_results": [
+    {
+      "experiment": "Baseline（无CBAM）",
+      "dir": "ablation_1_baseline",
+      "mAP": 0.8066436648368835,
+      "mAP_pct": 80.66436648368835,
+      "extra_params": "0",
+      "inference_ms": 12.743471115827559,
+      "gain_over_baseline": 0.0
+    },
+    {
+      "experiment": "仅通道注意力（CA Only）",
+      "dir": "ablation_2_channel_only",
+      "mAP": 0.2028636932373047,
+      "mAP_pct": 20.28636932373047,
+      "extra_params": "+5029.9K",
+      "inference_ms": 16.92985624074936,
+      "gain_over_baseline": -60.377997159957886
+    },
+    {
+      "experiment": "仅空间注意力（SA Only）",
+      "dir": "ablation_3_spatial_only",
+      "mAP": 0.3841331899166107,
+      "mAP_pct": 38.41331899166107,
+      "extra_params": "+1.6K",
+      "inference_ms": 14.43856358528137,
+      "gain_over_baseline": -42.25104749202728
+    },
+    {
+      "experiment": "完整CBAM（r=16, k=7）",
+      "dir": "ablation_4_cbam_r16_k7",
+      "mAP": 0.01030974555760622,
+      "mAP_pct": 1.030974555760622,
+      "extra_params": "+5031.5K",
+      "inference_ms": 17.793025076389313,
+      "gain_over_baseline": -79.63339192792773
+    }
+  ],
+  "hyper_results": [
+    {
+      "experiment": "lr=0.005, bs=4",
+      "dir": "hyper_lr0005_bs4",
+      "lr": 0.005,
+      "batch_size": 4,
+      "mAP": 0.8155229687690735,
+      "mAP_pct": 81.55229687690735,
+      "best_epoch": 12
+    },
+    {
+      "experiment": "lr=0.01,  bs=4（默认）",
+      "dir": "hyper_lr001_bs4",
+      "lr": 0.01,
+      "batch_size": 4,
+      "mAP": 0.808660626411438,
+      "mAP_pct": 80.8660626411438,
+      "best_epoch": 9
+    },
+    {
+      "experiment": "lr=0.02,  bs=4",
+      "dir": "hyper_lr002_bs4",
+      "lr": 0.02,
+      "batch_size": 4,
+      "mAP": 0.0,
+      "mAP_pct": 0.0,
+      "best_epoch": 1
+    },
+    {
+      "experiment": "lr=0.005, bs=2",
+      "dir": "hyper_lr0005_bs2",
+      "lr": 0.005,
+      "batch_size": 2,
+      "mAP": 0.8082250356674194,
+      "mAP_pct": 80.82250356674194,
+      "best_epoch": 12
+    },
+    {
+      "experiment": "lr=0.02,  bs=8",
+      "dir": "hyper_lr002_bs8",
+      "lr": 0.02,
+      "batch_size": 8,
+      "mAP": 0.8043226003646851,
+      "mAP_pct": 80.4322600364685,
+      "best_epoch": 11
+    }
+  ]
+}
