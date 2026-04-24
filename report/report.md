@@ -1,6 +1,32 @@
 # 基于 CBAM 注意力机制的 Faster R-CNN 目标检测实验报告
 
-**姓名：王誉凯　　学号：523111910158**
+**姓名：王誉凯　　学号：523111910158　　GitHub：[wangyukai585/faster\_rcnn\_cbam](https://github.com/wangyukai585/faster_rcnn_cbam)**
+
+---
+
+## 仓库结构
+
+```
+faster_rcnn_cbam/
+├── install.sh                  # 一键安装（PyTorch 2.0.0 + CUDA 11.8）
+├── requirements.txt
+├── analyze_results.py          # 结果汇总与可视化
+├── pytorch_mmdet/              # PyTorch 主实现（基于 MMDetection）
+│   ├── configs/                # 8 个实验配置（Baseline / 消融 4 组 / 超参数 4 组）
+│   ├── models/                 # CBAM 模块 + ResNet-50-CBAM Backbone
+│   ├── tools/                  # 训练 & 评估入口 + 一键运行脚本
+│   └── utils/                  # 可视化工具
+├── jittor_impl/                # Jittor 等价实现（加分项）
+│   ├── models/                 # ResNet / FPN / RPN / ROI Head / CBAM
+│   ├── datasets/               # VOC 数据集加载
+│   ├── utils/                  # 评估指标
+│   └── train_jittor.py         # 训练入口
+├── data/VOCdevkit/             # VOC2007 + VOC2012 数据集
+├── experiments/results/        # 9 组实验输出（权重 + 日志 + eval_results.json）
+└── report/                     # 本报告及所有实验图表
+    ├── report.md
+    └── figures/                # 7 张实验图 + final_report_data.json
+```
 
 ---
 
@@ -199,7 +225,7 @@ $$\mathbf{M}_s(\mathbf{F}) = \sigma\left(f^{7\times7}\left(\left[\text{AvgPool}(
 
 下图展示 4 组消融实验的训练 Loss 收敛情况：
 
-![训练 Loss 曲线](figures/ablation/training_loss_curve.png)
+<img src="figures/ablation/training_loss_curve.png" style="display:block;margin:0 auto;width:75%">
 
 **观察**：Baseline 收敛最快、最稳定；CA Only 和 SA Only 在前 4 epoch 收敛迟缓；Full CBAM 的 loss 下降轨迹异常，始终高于 Baseline，表明训练过程存在问题。
 
@@ -209,7 +235,7 @@ $$\mathbf{M}_s(\mathbf{F}) = \sigma\left(f^{7\times7}\left(\left[\text{AvgPool}(
 
 ### 6.1 消融实验结果
 
-![消融实验 mAP 收敛曲线](figures/ablation/ablation_map_curves.png)
+<img src="figures/ablation/ablation_map_curves.png" style="display:block;margin:0 auto;width:75%">
 
 | # | 配置 | mAP@0.5 | 最佳 Epoch | 推理速度（FPS） | 额外参数量 |
 |---|------|---------|-----------|---------------|----------|
@@ -218,7 +244,7 @@ $$\mathbf{M}_s(\mathbf{F}) = \sigma\left(f^{7\times7}\left(\left[\text{AvgPool}(
 | 3 | SA Only | 38.4% | 12 | 69.3 | +1.6K |
 | 4 | Full CBAM (r=16, k=7) | 1.03% | 6 | 56.2 | +5,031.5K |
 
-![消融实验柱状图](figures/ablation/ablation_bar_chart.png)
+<img src="figures/ablation/ablation_bar_chart.png" style="display:block;margin:0 auto;width:65%">
 
 **关键发现**：
 - Baseline 达到 **80.7% mAP**，在 VOC07+12 标准协议下属正常水平
@@ -228,13 +254,13 @@ $$\mathbf{M}_s(\mathbf{F}) = \sigma\left(f^{7\times7}\left(\left[\text{AvgPool}(
 
 ### 6.2 速度-精度权衡
 
-![速度-精度散点图](figures/ablation/speed_accuracy.png)
+<img src="figures/ablation/speed_accuracy.png" style="display:block;margin:0 auto;width:65%">
 
 CA Only 和 Full CBAM 在引入显著速度损耗的同时精度反而大幅下降，表现出最差的速度-精度权衡。SA Only 开销极小（仅 +1.6K 参数）但精度损失也很严重，说明问题根源在于 CBAM 与当前实现的兼容性，而非参数量本身。
 
 ### 6.3 训练损失分量分析
 
-![Baseline Loss 分量分解](figures/training/loss_components.png)
+<img src="figures/training/loss_components.png" style="display:block;margin:0 auto;width:70%">
 
 以 Baseline 为例，4 个 loss 分量随训练稳步下降：
 - **RPN Cls Loss** 最先收敛（约第 4 epoch），说明区域提议质量较早稳定
@@ -292,23 +318,25 @@ $$\text{CA 参数量} = \sum_{l} 2 \times \frac{C_l}{r} \times C_l = 2 \times \l
 
 ### 8.1 收敛曲线
 
-![超参数实验 mAP 收敛曲线](figures/hyper/hyper_map_curves.png)
+<img src="figures/hyper/hyper_map_curves.png" style="display:block;margin:0 auto;width:75%">
 
 左图（学习率对比，bs=4 固定）中，lr=0.02 的训练曲线在所有 epoch 均保持 0%，因为学习率过大导致 loss 爆炸（实测最大 loss 达 3.63×10¹¹），梯度溢出 NaN，模型完全无法收敛。
 
 ### 8.2 最终性能对比
 
-![超参数对比柱状图](figures/hyper/hyper_comparison.png)
+<img src="figures/hyper/hyper_comparison.png" style="display:block;margin:0 auto;width:65%">
 
 | # | lr | batch_size | mAP@0.5 | 最佳 Epoch | FPS |
 |---|-----|-----------|---------|-----------|-----|
 | 1 | 0.005 | 4 | **81.6%** | 12 | 79.7 |
-| 2 | **0.010** | **4（默认）** | 80.9% | 9 | 79.9 |
+| 2 | **0.010** | **4（默认）** | 80.9%† | 9 | 79.9 |
 | 3 | 0.020 | 4 | 0.0%（发散）| — | 113.4* |
 | 4 | 0.005 | 2 | 80.8% | 12 | 79.8 |
 | 5 | 0.020 | 8 | 80.4% | 11 | 79.2 |
 
 > \* lr=0.02 实验发散后模型极轻（几乎不做有效推理），FPS 虚高无参考意义
+>
+> † hyper-2 与消融实验 Baseline 配置相同（lr=0.010, bs=4），但为独立复跑而非复用同一 checkpoint，两次结果分别为 80.7% 和 80.9%，相差 0.2%，在正常随机误差范围内。
 
 ### 8.3 分析
 
@@ -367,4 +395,4 @@ CBAM 嵌入 Faster R-CNN 最终未能带来性能提升，主要教训：
 
 ---
 
-*报告生成日期：2026-04-25　　实验平台：AutoDL（RTX 4090 D）*
+*报告日期：2026-04-25　　实验平台：AutoDL（RTX 4090 D）     总开销：57元*

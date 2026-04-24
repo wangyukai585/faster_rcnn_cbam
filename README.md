@@ -110,7 +110,7 @@ bash pytorch_mmdet/tools/run_hyper.sh
 | # | lr | batch_size | 说明 |
 |---|-----|-----------|------|
 | 1 | 0.005 | 4 | 学习率偏低 |
-| 2 | 0.010 | 4 | 默认（复用消融实验 1 的结果，即 Baseline） |
+| 2 | 0.010 | 4 | 默认配置，独立复跑（与消融 Baseline 相差 0.2%，在误差范围内） |
 | 3 | 0.020 | 4 | 学习率偏高 |
 | 4 | 0.005 | 2 | 小批量（线性缩放 lr） |
 | 5 | 0.020 | 8 | 大批量（线性缩放 lr） |
@@ -200,7 +200,7 @@ Jittor 版本仅需保证代码正确，无需实际运行训练。
 
 ```
 faster_rcnn_cbam/
-├── install.sh                      # 一键安装脚本（AutoDL PyTorch 2.1 + CUDA 11.8）
+├── install.sh                      # 一键安装脚本（PyTorch 2.0.0 + CUDA 11.8）
 ├── requirements.txt                # Python 依赖清单
 ├── analyze_results.py              # 结果汇总与可视化
 ├── pytorch_mmdet/
