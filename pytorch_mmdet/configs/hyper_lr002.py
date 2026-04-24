@@ -5,11 +5,11 @@
 #       更大的 lr 收敛更快，但可能导致训练不稳定或过拟合。
 #       根据线性缩放规则（Linear Scaling Rule），lr 与 batch_size 等比。
 #
-# 与默认配置（cbam_faster_rcnn.py）的区别：
+# 与默认配置（base_faster_rcnn.py）的区别：
 #   optimizer.lr: 0.01 -> 0.02
 # ============================================================
 
-_base_ = ['cbam_faster_rcnn.py']
+_base_ = ['base_faster_rcnn.py']
 
 optim_wrapper = dict(
     type='OptimWrapper',

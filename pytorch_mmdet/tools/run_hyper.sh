@@ -2,7 +2,7 @@
 # ============================================================
 # 一键运行所有超参数实验（5组）
 #
-# 实验设计：在完整 CBAM 模型基础上，分别验证学习率和批量大小的影响。
+# 实验设计：在 Baseline Faster R-CNN 基础上，分别验证学习率和批量大小的影响。
 #
 #   实验矩阵：
 #   ┌─────────┬────────────┬──────────────┐
@@ -62,12 +62,12 @@ echo ""
 echo "[2/5] lr=0.01（默认）, batch_size=4..."
 if [ ! -f "${RESULTS_DIR}/${EXP_NAME}/eval_results.json" ]; then
     ${PYTHON} ${TRAIN} \
-        pytorch_mmdet/configs/cbam_faster_rcnn.py \
+        pytorch_mmdet/configs/base_faster_rcnn.py \
         --work-dir "${RESULTS_DIR}/${EXP_NAME}" \
         --seed ${SEED}
     CKPT=$(find_best_ckpt "${RESULTS_DIR}/${EXP_NAME}")
     ${PYTHON} ${EVAL} \
-        pytorch_mmdet/configs/cbam_faster_rcnn.py \
+        pytorch_mmdet/configs/base_faster_rcnn.py \
         "${CKPT}" \
         --out-dir "${RESULTS_DIR}/${EXP_NAME}"
 else
