@@ -12,11 +12,11 @@
 | 组件 | 版本 |
 |------|------|
 | Python | 3.10 |
-| PyTorch | 2.1.0 |
+| PyTorch | 2.0.0 |
 | CUDA | 11.8 |
 | OS | Ubuntu 20.04 |
 | mmengine | ≥ 0.8.0 |
-| mmcv | 2.1.0 |
+| mmcv | 2.0.1 |
 | mmdet | ≥ 3.2.0 |
 
 ### 1.2 一键安装
@@ -101,6 +101,8 @@ bash pytorch_mmdet/tools/run_ablation.sh
 
 ### 3.2 超参数实验（5 组，一键运行）
 
+超参数实验在 **Baseline Faster R-CNN**（无 CBAM）基础上进行，排除注意力模块对结果的干扰，单独分析学习率和批量大小的影响。
+
 ```bash
 bash pytorch_mmdet/tools/run_hyper.sh
 ```
@@ -108,7 +110,7 @@ bash pytorch_mmdet/tools/run_hyper.sh
 | # | lr | batch_size | 说明 |
 |---|-----|-----------|------|
 | 1 | 0.005 | 4 | 学习率偏低 |
-| 2 | 0.010 | 4 | 默认（复用消融实验 4 的结果） |
+| 2 | 0.010 | 4 | 默认（复用消融实验 1 的结果，即 Baseline） |
 | 3 | 0.020 | 4 | 学习率偏高 |
 | 4 | 0.005 | 2 | 小批量（线性缩放 lr） |
 | 5 | 0.020 | 8 | 大批量（线性缩放 lr） |
@@ -183,6 +185,14 @@ python analyze_results.py --mode hyper     # 仅超参数实验
 
 `jittor_impl/` 目录包含 Jittor 框架下的等价实现，代码结构与 PyTorch 版对应。
 Jittor 版本仅需保证代码正确，无需实际运行训练。
+
+| 文件 / 目录 | 说明 |
+|-------------|------|
+| `train_jittor.py` | 训练入口（支持 `--no-channel-attn --no-spatial-attn` 以禁用 CBAM，对应 Baseline） |
+| `run_hyper_jittor.sh` | 一键运行全部超参数实验（Baseline 模式，与 PyTorch 版 `run_hyper.sh` 对应） |
+| `models/` | 模型定义（ResNet50-CBAM、FPN、RPN、ROI Head） |
+| `datasets/` | VOC 数据集加载 |
+| `utils/` | 评估指标工具 |
 
 ---
 
