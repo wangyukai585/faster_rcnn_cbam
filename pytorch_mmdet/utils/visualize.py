@@ -15,18 +15,42 @@
 import json
 import os
 from pathlib import Path
+import re
 from typing import Dict, List, Optional, Tuple
 
 import matplotlib
 matplotlib.use('Agg')   # 无显示器环境下不弹窗
+from matplotlib import font_manager
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import numpy as np
 import pandas as pd
 
 # 统一图表风格
+
+
+def _pick_font_family() -> Tuple[str, bool]:
+    preferred_fonts = [
+        'Noto Sans CJK SC',
+        'Noto Sans CJK JP',
+        'Source Han Sans SC',
+        'WenQuanYi Zen Hei',
+        'SimHei',
+        'Microsoft YaHei',
+        'PingFang SC',
+        'Arial Unicode MS',
+    ]
+    available = {font.name for font in font_manager.fontManager.ttflist}
+    for font_name in preferred_fonts:
+        if font_name in available:
+            return font_name, True
+    return 'DejaVu Sans', False
+
+
+_FONT_FAMILY, _HAS_CJK_FONT = _pick_font_family()
+
 plt.rcParams.update({
-    'font.family': 'DejaVu Sans',
+    'font.family': _FONT_FAMILY,
     'font.size': 11,
     'axes.titlesize': 13,
     'axes.labelsize': 12,
@@ -34,7 +58,12 @@ plt.rcParams.update({
     'figure.dpi': 150,
     'savefig.bbox': 'tight',
     'savefig.dpi': 150,
+    'axes.unicode_minus': False,
 })
+
+
+def _text(zh: str, en: str) -> str:
+    return zh if _HAS_CJK_FONT else en
 
 # 各实验的显示名称和颜色
 _EXP_STYLES: Dict[str, Tuple[str, str]] = {
@@ -43,11 +72,14 @@ _EXP_STYLES: Dict[str, Tuple[str, str]] = {
     'ablation_3_spatial_only': ('SA Only',             '#9C27B0'),
     'ablation_4_cbam_r16_k7':  ('Full CBAM (r=16,k=7)', '#F44336'),
     'hyper_lr0005_bs4':        ('lr=0.005, bs=4',     '#00BCD4'),
-    'hyper_lr001_bs4':         ('lr=0.01,  bs=4 (默认)', '#F44336'),
+    'hyper_lr001_bs4':         ('lr=0.01, bs=4 (default)', '#F44336'),
     'hyper_lr002_bs4':         ('lr=0.02,  bs=4',     '#FF5722'),
     'hyper_lr0005_bs2':        ('lr=0.005, bs=2',     '#8BC34A'),
     'hyper_lr002_bs8':         ('lr=0.02,  bs=8',     '#3F51B5'),
 }
+
+
+_NUMERIC_PATTERN = re.compile(r'(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)')
 
 
 # ============================================================
@@ -64,8 +96,22 @@ def _load_csv(csv_path: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
     df = pd.read_csv(csv_path)
     iter_df = df[df['type'] == 'iter'].copy()
     epoch_df = df[df['type'] == 'epoch_end'].copy()
+
+    def _to_numeric_series(series: pd.Series) -> pd.Series:
+        if pd.api.types.is_numeric_dtype(series):
+            return pd.to_numeric(series, errors='coerce')
+
+        extracted = series.astype(str).str.extract(_NUMERIC_PATTERN, expand=False)
+        return pd.to_numeric(extracted, errors='coerce')
+
     iter_df['epoch'] = iter_df['epoch'].astype(int)
     iter_df['iter'] = iter_df['iter'].astype(int)
+    for col in [
+        'total_loss', 'rpn_cls_loss', 'rpn_bbox_loss', 'rcnn_cls_loss', 'rcnn_bbox_loss'
+    ]:
+        if col in iter_df.columns:
+            iter_df[col] = _to_numeric_series(iter_df[col])
+
     epoch_df['epoch'] = epoch_df['epoch'].astype(int)
     epoch_df['val_mAP'] = pd.to_numeric(epoch_df['val_mAP'], errors='coerce')
     return iter_df, epoch_df
@@ -121,6 +167,9 @@ def plot_loss_curve(
 
         # 按 epoch 分组，计算均值 loss
         loss_col = 'total_loss' if 'total_loss' in iter_df.columns else iter_df.columns[3]
+        iter_df = iter_df.dropna(subset=[loss_col])
+        if iter_df.empty:
+            continue
         epoch_loss = iter_df.groupby('epoch')[loss_col].mean().reset_index()
 
         label, color = _EXP_STYLES.get(exp_key, (exp_key, None))
@@ -137,7 +186,7 @@ def plot_loss_curve(
 
     ax.set_xlabel('Epoch')
     ax.set_ylabel('Training Loss')
-    ax.set_title('Training Loss Curve：Baseline vs CBAM')
+    ax.set_title('Training Loss Curve: Baseline vs CBAM')
     ax.legend()
     ax.grid(True, linestyle='--', alpha=0.5)
     ax.xaxis.set_major_locator(mticker.MaxNLocator(integer=True))
@@ -199,7 +248,7 @@ def plot_map_curve(
 
     ax.set_xlabel('Epoch')
     ax.set_ylabel('mAP@0.5 (%)')
-    ax.set_title('Validation mAP Curve：Baseline vs CBAM')
+    ax.set_title('Validation mAP Curve: Baseline vs CBAM')
     ax.legend()
     ax.grid(True, linestyle='--', alpha=0.5)
     ax.xaxis.set_major_locator(mticker.MaxNLocator(integer=True))
@@ -257,7 +306,7 @@ def plot_ablation_bar(results_dir: str, out_dir: str) -> None:
     ax.set_xticks(range(len(labels)))
     ax.set_xticklabels(labels, rotation=20, ha='right')
     ax.set_ylabel('mAP@0.5 (%)')
-    ax.set_title('消融实验：各注意力组件对 mAP 的贡献')
+    ax.set_title(_text('消融实验：各注意力组件对 mAP 的贡献', 'Ablation Study: Attention Module Contribution to mAP'))
     y_max = max(maps) * 1.12 if maps else 100
     ax.set_ylim(0, y_max if y_max > 0 else 100)
     ax.grid(True, axis='y', linestyle='--', alpha=0.5)
@@ -280,7 +329,7 @@ def plot_hyper_comparison(results_dir: str, out_dir: str) -> None:
     # ---- 子图 1：学习率对比（bs=4 固定）----
     lr_exps = [
         ('hyper_lr0005_bs4', 'lr=0.005'),
-        ('hyper_lr001_bs4',  'lr=0.01 (默认)'),
+        ('hyper_lr001_bs4',  'lr=0.01 (default)'),
         ('hyper_lr002_bs4',  'lr=0.02'),
     ]
     lr_vals, lr_maps, lr_colors = [], [], []
@@ -300,7 +349,7 @@ def plot_hyper_comparison(results_dir: str, out_dir: str) -> None:
     axes[0].set_xticks(range(len(lr_vals)))
     axes[0].set_xticklabels(lr_vals)
     axes[0].set_ylabel('mAP@0.5 (%)')
-    axes[0].set_title('学习率对比（batch_size=4）')
+    axes[0].set_title(_text('学习率对比（batch_size=4）', 'Learning Rate Comparison (batch_size=4)'))
     lr_y_max = max(lr_maps) * 1.12 if lr_maps else 100
     axes[0].set_ylim(0, lr_y_max if lr_y_max > 0 else 100)
     axes[0].grid(True, axis='y', linestyle='--', alpha=0.5)
@@ -308,7 +357,7 @@ def plot_hyper_comparison(results_dir: str, out_dir: str) -> None:
     # ---- 子图 2：Batch Size 对比----
     bs_exps = [
         ('hyper_lr0005_bs2',  'bs=2 (lr=0.005)'),
-        ('hyper_lr001_bs4',   'bs=4 (默认)'),
+        ('hyper_lr001_bs4',   'bs=4 (default)'),
         ('hyper_lr002_bs8',   'bs=8 (lr=0.02)'),
     ]
     bs_vals, bs_maps, bs_colors = [], [], []
@@ -328,12 +377,12 @@ def plot_hyper_comparison(results_dir: str, out_dir: str) -> None:
     axes[1].set_xticks(range(len(bs_vals)))
     axes[1].set_xticklabels(bs_vals)
     axes[1].set_ylabel('mAP@0.5 (%)')
-    axes[1].set_title('Batch Size 对比（线性缩放 lr）')
+    axes[1].set_title(_text('Batch Size 对比（线性缩放 lr）', 'Batch Size Comparison (Linear LR Scaling)'))
     bs_y_max = max(bs_maps) * 1.12 if bs_maps else 100
     axes[1].set_ylim(0, bs_y_max if bs_y_max > 0 else 100)
     axes[1].grid(True, axis='y', linestyle='--', alpha=0.5)
 
-    fig.suptitle('超参数实验对比', fontsize=14, fontweight='bold', y=1.02)
+    fig.suptitle(_text('超参数实验对比', 'Hyperparameter Comparison'), fontsize=14, fontweight='bold', y=1.02)
     fig.tight_layout()
 
     os.makedirs(out_dir, exist_ok=True)
